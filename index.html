@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Book with Sarah - ProBookingQR</title>
+   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUHJvQm9va2luZ1FSIiwic2hvcnRfbmFtZSI6IlByb0Jvb2tpbmciLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzM2NzNkYyIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUJwWkQwaWFXTnZiaUlnZG1sbGQwSnZlRDBpTUNBd0lESTBJREkwSWlCbWFXeHNQU0pqZFhKeVpXNTBRMjlzYjNJaVBqeHlaV04wSUhnOUlqUWlJSGs5SWpRaUlIZHBaSFJvUFNJeE5pSWdhR1wZwjJoMFBTSXhOaUlnWm1sc2JEMGlJek0yTnpOa1l5SXZQand2YzNablBnPT0iLCJzaXplcyI6IjI0eDI0IiwidHlwZSI6ImltYWdlL3N2Zyt4bWwifV19">
+   <meta name="theme-color" content="#3b82f6">
+   <style>
+      /* General styling */
+      * {
+         margin: 0;
+         padding: 0;
+         box-sizing: border-box;
+      }
+
+      body {
+         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         min-height: 100vh;
+         padding: 0;
+         line-height: 1.6;
+      }
+
+      .container {
+         max-width: 400px;
+         margin: 0 auto;
+         background: white;
+         min-height: 100vh;
+         display: flex;
+         flex-direction: column;
+         position: relative;
+         box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Header styling */
+      .header {
+         background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+         color: white;
+         padding: 20px;
+         text-align: center;
+         position: sticky;
+         top: 0;
+         z-index: 100;
+      }
+
+      .stylist-info {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         gap: 12px;
+         margin-bottom: 8px;
+      }
+
+      .stylist-avatar {
+         width: 40px;
+         height: 40px;
+         border-radius: 50%;
+         background: rgba(255, 255, 255, 0.2);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 18px;
+      }
+
+      .salon-name {
+         font-size: 12px;
+         opacity: 0.9;
+         font-weight: 400;
+      }
+
+      /* Chat container and messages */
+      .chat-container {
+         flex: 1;
+         padding: 20px;
+         overflow-y: auto;
+         background: #f8fafc;
+      }
+
+      .message {
+         margin-bottom: 16px;
+         animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+         from {
+            opacity: 0;
+            transform: translateY(10px);
+         }
+
+         to {
+            opacity: 1;
+            transform: translateY(0);
+         }
+      }
+
+      .bot-message {
+         display: flex;
+         align-items: flex-start;
+         gap: 8px;
+      }
+
+      .bot-avatar {
+         width: 32px;
+         height: 32px;
+         border-radius: 50%;
+         background: #3b82f6;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         color: white;
+         font-size: 16px;
+         flex-shrink: 0;
+      }
+
+      .message-bubble {
+         background: white;
+         padding: 12px 16px;
+         border-radius: 18px;
+         max-width: 280px;
+         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+         position: relative;
+      }
+
+      .message-bubble::before {
+         content: '';
+         position: absolute;
+         left: -8px;
+         top: 12px;
+         width: 0;
+         height: 0;
+         border-top: 8px solid transparent;
+         border-bottom: 8px solid transparent;
+         border-right: 8px solid white;
+      }
+
+      /* Interactive elements (services, time slots) */
+      .service-grid,
+      .time-slots {
+         display: grid;
+         gap: 12px;
+         margin-top: 12px;
+      }
+
+      .service-grid {
+         grid-template-columns: 1fr;
+      }
+
+      .time-slots {
+         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .service-card,
+      .time-slot {
+         background: white;
+         border: 2px solid #e2e8f0;
+         border-radius: 12px;
+         padding: 16px;
+         cursor: pointer;
+         transition: all 0.2s ease;
+      }
+
+      .service-card {
+         display: flex;
+         align-items: center;
+         gap: 12px;
+      }
+
+      .time-slot {
+         padding: 12px;
+         text-align: center;
+         font-weight: 500;
+      }
+
+      .service-card:hover,
+      .time-slot:hover {
+         border-color: #3b82f6;
+         transform: translateY(-2px);
+         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      }
+
+      .service-card.selected,
+      .time-slot.selected {
+         border-color: #3b82f6;
+         background: #eff6ff;
+      }
+
+      .service-icon {
+         font-size: 24px;
+         width: 40px;
+         text-align: center;
+      }
+
+      .service-info {
+         flex: 1;
+      }
+
+      .service-name {
+         font-weight: 600;
+         color: #1e293b;
+         margin-bottom: 4px;
+      }
+
+      .service-duration {
+         color: #64748b;
+         font-size: 14px;
+      }
+
+      /* Forms and Buttons */
+      .form-group {
+         margin-bottom: 16px;
+      }
+
+      .form-label {
+         display: block;
+         margin-bottom: 6px;
+         font-weight: 500;
+         color: #374151;
+      }
+
+      .form-input {
+         width: 100%;
+         padding: 12px;
+         border: 2px solid #e2e8f0;
+         border-radius: 8px;
+         font-size: 16px;
+         transition: border-color 0.2s ease;
+      }
+
+      .form-input:focus {
+         outline: none;
+         border-color: #3b82f6;
+      }
+
+      .form-textarea {
+         resize: vertical;
+         min-height: 80px;
+      }
+
+      .action-buttons {
+         display: flex;
+         gap: 12px;
+         margin-top: 16px;
+      }
+
+      .btn {
+         flex: 1;
+         padding: 12px 24px;
+         border: none;
+         border-radius: 8px;
+         font-weight: 600;
+         cursor: pointer;
+         transition: all 0.2s ease;
+         font-size: 16px;
+      }
+
+      .btn-primary {
+         background: #3b82f6;
+         color: white;
+      }
+
+      .btn-primary:hover {
+         background: #1d4ed8;
+      }
+
+      .btn-primary:disabled {
+         background: #94a3b8;
+         cursor: not-allowed;
+      }
+
+      .btn-secondary {
+         background: #f1f5f9;
+         color: #475569;
+         border: 1px solid #e2e8f0;
+      }
+
+      .btn-secondary:hover {
+         background: #e2e8f0;
+      }
+
+      /* Summary and Prompts */
+      .appointment-summary {
+         background: #f0f9ff;
+         border: 2px solid #0ea5e9;
+         border-radius: 12px;
+         padding: 16px;
+         margin-top: 12px;
+      }
+
+      .summary-title {
+         font-weight: 600;
+         color: #0369a1;
+         margin-bottom: 8px;
+         display: flex;
+         align-items: center;
+         gap: 8px;
+      }
+
+      .summary-item {
+         display: flex;
+         justify-content: space-between;
+         margin-bottom: 4px;
+         color: #374151;
+      }
+
+      .pwa-prompt {
+         background: #fef3c7;
+         border: 1px solid #f59e0b;
+         border-radius: 8px;
+         padding: 12px;
+         margin-top: 12px;
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         font-size: 14px;
+      }
+
+      /* Modal styling */
+      .modal-overlay {
+         position: fixed;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background: rgba(0, 0, 0, 0.5);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         z-index: 1000;
+         opacity: 0;
+         visibility: hidden;
+         transition: all 0.3s ease-out;
+      }
+
+      .modal-overlay.visible {
+         opacity: 1;
+         visibility: visible;
+      }
+
+      .modal-content {
+         background: white;
+         padding: 24px;
+         border-radius: 12px;
+         max-width: 350px;
+         width: 90%;
+         text-align: center;
+         transform: scale(0.9);
+         transition: all 0.3s ease-out;
+      }
+
+      .modal-overlay.visible .modal-content {
+         transform: scale(1);
+      }
+
+      .modal-title {
+         font-size: 20px;
+         font-weight: 600;
+         margin-bottom: 8px;
+      }
+
+      .modal-body {
+         margin-bottom: 20px;
+         color: #475569;
+      }
+
+      /* Animations and indicators */
+      .typing-indicator {
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         color: #64748b;
+         font-style: italic;
+         margin-top: 8px;
+      }
+
+      .typing-dots {
+         display: flex;
+         gap: 4px;
+      }
+
+      .typing-dot {
+         width: 6px;
+         height: 6px;
+         border-radius: 50%;
+         background: #94a3b8;
+         animation: typing 1.4s ease-in-out infinite;
+      }
+
+      .typing-dot:nth-child(1) {
+         animation-delay: 0s;
+      }
+
+      .typing-dot:nth-child(2) {
+         animation-delay: 0.2s;
+      }
+
+      .typing-dot:nth-child(3) {
+         animation-delay: 0.4s;
+      }
+
+      @keyframes typing {
+
+         0%,
+         60%,
+         100% {
+            transform: translateY(0);
+            opacity: 0.4;
+         }
+
+         30% {
+            transform: translateY(-10px);
+            opacity: 1;
+         }
+      }
+
+      .fade-in {
+         animation: fadeIn 0.5s ease-out;
+      }
+
+      @keyframes fadeIn {
+         from {
+            opacity: 0;
+         }
+
+         to {
+            opacity: 1;
+         }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 480px) {
+         .container {
+            max-width: 100%;
+            margin: 0;
+         }
+
+         .service-grid,
+         .time-slots {
+            grid-template-columns: 1fr;
+         }
+      }
+   </style>
+</head>
+
+<body>
+   <div class="container">
+      <div class="header">
+         <div class="stylist-info">
+            <div class="stylist-avatar">✂️</div>
+            <div>
+               <h1>Sarah Johnson</h1>
+               <div class="salon-name">Luxe Hair Studio</div>
+            </div>
+         </div>
+      </div>
+
+      <div class="chat-container" id="chatContainer">
+         <!-- Messages will be inserted here -->
+      </div>
+   </div>
+
+   <!-- Custom Modal for Alerts -->
+   <div class="modal-overlay" id="customModal">
+      <div class="modal-content">
+         <h3 id="modalTitle">Alert</h3>
+         <p id="modalBody">This is the default message.</p>
+         <button class="btn btn-primary" onclick="closeModal()">OK</button>
+      </div>
+   </div>
+
+   <!-- Supabase Client Library -->
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <script>
+      // --- SUPABASE SETUP ---
+      // IMPORTANT: Replace with your actual Supabase URL and Anon Key
+      const SUPABASE_URL = 'https://anzcqpptssuycgngfvpg.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuemNxcHB0c3N1eWNnbmdmdnBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMzI4MDQsImV4cCI6MjA2NjgwODgwNH0.6HwUsE_wCNDtuukHRpTKe8KzmVmMC7lQgCgKsLWwq0U';
+
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('Supabase client initialized.');
+
+      // --- APPLICATION STATE ---
+      let selectedServices = [],
+         selectedTime = null,
+         customerInfo = {},
+         isTyping = false,
+         currentStylist = null,
+         services = [];
+      const timeSlots = [{
+            time: '10:00 AM',
+            available: true
+         }, {
+            time: '11:30 AM',
+            available: true
+         },
+         {
+            time: '2:15 PM',
+            available: true,
+            recommended: true
+         }, {
+            time: '3:00 PM',
+            available: true
+         },
+         {
+            time: '4:00 PM',
+            available: true,
+            recommended: true
+         }, {
+            time: '5:30 PM',
+            available: true
+         }
+      ];
+
+      // --- CORE FUNCTIONS ---
+
+      async function loadStylistData(qrCode) {
+         try {
+            // Corrected the column name from 'qr_code_id' to 'qr_code' based on the error hint
+            const {
+               data,
+               error
+            } = await supabaseClient.from('stylists').select('*').eq('qr_code', qrCode).single();
+            if (error) {
+               throw error;
+            }
+            return data;
+         } catch (err) {
+            console.error('Database query error:', err);
+            throw err;
+         }
+      }
+
+      async function initChat() {
+         try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrCode = urlParams.get('s') || 'sarah-j';
+            currentStylist = await loadStylistData(qrCode);
+            updateStylistInfo(currentStylist);
+            services = currentStylist.services_offered || [];
+            addBotMessage(`Hi! 👋 Ready to book with ${currentStylist.name}? Let's find the perfect service.`, () => setTimeout(showServiceSelection, 1000));
+         } catch (error) {
+            let userErrorMessage = `Sorry, I couldn't load the stylist's profile. Please ensure the QR code is correct and try again.`;
+            if (error && error.message.toLowerCase().includes('invalid api key')) {
+               userErrorMessage = `There seems to be a configuration issue with the application (Invalid API Key). Please contact the administrator to resolve this.`;
+               console.error("CRITICAL ERROR: The Supabase API Key is invalid. Please verify the SUPABASE_ANON_KEY constant.");
+            } else if (error) {
+               userErrorMessage += `<br><small>Error: ${error.message}</small>`;
+            }
+            addBotMessage(userErrorMessage);
+         }
+      }
+
+      function updateStylistInfo(stylist) {
+         document.title = `Book with ${stylist.name} - ProBookingQR`;
+         document.querySelector('.stylist-info h1').textContent = stylist.name;
+         document.querySelector('.salon-name').textContent = stylist.salon_name;
+      }
+
+      function addBotMessage(message, callback) {
+         if (isTyping) return;
+         isTyping = true;
+         const typingDiv = document.createElement('div');
+         typingDiv.className = 'message bot-message';
+         const stylistName = currentStylist ? currentStylist.name.split(' ')[0] : 'Sarah';
+         typingDiv.innerHTML = `<div class="bot-avatar">🤖</div><div class="typing-indicator">${stylistName} is typing<div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+         document.getElementById('chatContainer').appendChild(typingDiv);
+         scrollToBottom();
+
+         setTimeout(() => {
+            typingDiv.remove();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            messageDiv.innerHTML = `<div class="bot-avatar">🤖</div><div class="message-bubble">${message}</div>`;
+            document.getElementById('chatContainer').appendChild(messageDiv);
+            scrollToBottom();
+            isTyping = false;
+            if (callback) callback();
+         }, 1200);
+      }
+
+      // --- UI RENDERING FUNCTIONS ---
+
+      function showServiceSelection() {
+         if (!services || services.length === 0) {
+            addBotMessage("Sorry, no services are configured for this stylist. Please contact the salon.");
+            return;
+         }
+         const serviceIcons = {
+            'haircut': '✂️',
+            'color': '🎨',
+            'manicure': '💅',
+            'eyebrows': '✨',
+            'blowout': '💨',
+            'highlights': '🌟',
+            'mens_cut': '✂️',
+            'beard_trim': '🧔'
+         };
+         const servicesHtml = services.map(s => `<div class="service-card" onclick="selectService('${s.id}')"><div class="service-icon">${serviceIcons[s.id] || '✨'}</div><div class="service-info"><div class="service-name">${s.name}</div><div class="service-duration">${s.duration} min · $${s.price}</div></div></div>`).join('');
+         addBotMessage(`<div>What are you looking to get done today?</div><div class="service-grid">${servicesHtml}</div>`);
+      }
+
+      function showTimeSelection() {
+         const timeSlotsHtml = timeSlots.map(slot => `<div class="time-slot" onclick="selectTime('${slot.time}')">${slot.time}</div>`).join('');
+         addBotMessage(`<div>Great! Here are the available times for today:</div><div class="time-slots">${timeSlotsHtml}</div>`);
+      }
+
+      function showCustomerForm() {
+         addBotMessage(`<div>Almost done! Just need a few quick details:</div><div class="form-group"><label class="form-label">👤 First name</label><input type="text" class="form-input" id="nameInput" placeholder="Your first name" required></div><div class="form-group"><label class="form-label">📱 Phone number</label><input type="tel" class="form-input" id="phoneInput" placeholder="(555) 123-4567" required></div><div class="form-group"><label class="form-label">📧 Email (optional)</label><input type="email" class="form-input" id="emailInput" placeholder="your@email.com"></div><div class="form-group"><label class="form-label">💬 Notes (optional)</label><textarea class="form-input form-textarea" id="notesInput" placeholder="Anything special for the stylist?">
